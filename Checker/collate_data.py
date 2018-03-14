@@ -1,22 +1,23 @@
 import pandas as pd
 import sqlite3
 import os
+import sys
 from django.apps import apps
 import django
 
 
 def main():
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SpeedChecker.settings')
-    django.setup()
 
     location = apps.get_model('Checker', 'Location')
     area = apps.get_model('Checker', 'Area')
 
-    for filename in os.listdir('../Data'):
+    directory = '../SpeedChecker/Data'
+
+    for filename in os.listdir(directory):
         if 'data' not in locals():
-            data = pd.read_csv('../Data/'+filename)
+            data = pd.read_csv(directory+'/'+filename)
         else:
-            new_data = pd.read_csv('../Data/'+filename)
+            new_data = pd.read_csv(directory+'/'+filename)
             data = pd.concat([data, new_data])
 
     # add area codes
@@ -65,17 +66,19 @@ def main():
     data = data.where((pd.notnull(data)), '')
     field_names = [v for k, v in rename_dict.items()]
     sql_fields = ', '.join(['"'+x+'"' for x in field_names])
-    con = sqlite3.connect('../db.sqlite3')
+    con = sqlite3.connect('SpeedChecker/../db.sqlite3')
     cur = con.cursor()
     pos = 0
+    count = 0
     for index, row in data.iterrows():
         values = ['"'+str(row[x])+'"' if str(row[x]) == row[x] else str(row[x]) for x in field_names]
         sql = "INSERT INTO Checker_location ({}) SELECT {} WHERE NOT EXISTS(SELECT 1 FROM Checker_location WHERE post_code = '{}');".format(
             sql_fields, ', '.join(values), row['post_code'])
         cur.execute(sql)
         pos += 1
+        count += 1
         if pos == 50000:
-            print('{} done'.format((index/len(data))*100))
+            print('{} done'.format((count/len(data))*100))
             pos = 0
 
     print('Done!')
@@ -83,4 +86,9 @@ def main():
 
 
 if __name__ == '__main__':
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.append(BASE_DIR)
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'SpeedChecker.settings'
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SpeedChecker.settings')
+    django.setup()
     main()

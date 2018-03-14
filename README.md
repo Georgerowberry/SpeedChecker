@@ -25,7 +25,7 @@ Install the dependencies and start the server.
 $ git clone https://github.com/Georgerowberry/SpeedChecker.git
 $ cd SpeedChecker
 $ pip3 install -r requirements.txt
-$ python Checker/collate_data.py
+$ python Checker/collate_data.py   (this may take a few minutes)
 $ python manage.py runserver [port]
 ```
 The server will be running on http://127.0.0.1:8000/ by defult
