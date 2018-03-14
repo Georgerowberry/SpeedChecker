@@ -1,0 +1,4 @@
+Django==2.0.3
+pyspeedtest==1.2.7
+pandas==0.22.0
+numpy==1.14.2

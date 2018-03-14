@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% csrf_token %}
+    </nav>
+    <div id="container" class="container-fluid">
+    <div class="row">
+        <div id="input_form" class="vcenter">
+            <div class="input-field col s8 m6 l4 push-s2 push-m3 push-l4">
+                <i class="material-icons prefix">location_on</i>
+                  <input id="post_code" type="text" class="validate">
+                  <label for="post_code">Full or Partial Post Code</label>
+                <div class="center-align">
+                    <a id="pc_submit" class="waves-effect waves-light btn">Start</a>
+                </div>
+            </div>
+        </div>
+
+
+    <div id="loader" class="preloader-wrapper big vcenter">
+      <div class="spinner-layer spinner-blue">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer spinner-red">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer spinner-yellow">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer spinner-green">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+    </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <script>
+    $('#pc_submit').on('click', function () {
+        var pc = $('#post_code').val();
+        var loader = $('#loader');
+        var i_form = $('#input_form');
+        if (pc){
+            loader.addClass('active');
+            i_form.hide();
+
+            $.ajax({
+                url: '../',
+                dataType: 'json',
+                type: "POST",
+                data: {'p_code': pc},
+                success: function (data) {
+                    if (data.error){
+                        loader.removeClass('active');
+                        i_form.show();
+                        Materialize.toast(data.error, 4000)
+                    }
+                    if (data.results){
+                        loader.removeClass('active');
+                        $('#container').html(data.results);
+                    }
+                    else {
+                        loader.removeClass('active');
+                        i_form.show();
+                    }
+                }
+            });
+
+        }
+    })
+    </script>
+{% endblock %}

@@ -1,0 +1,229 @@
+{% load custom_tags %}
+<div class="row" style="margin-top: 20px">
+<div class="col s12 m10 l8 push-m1 push-l2">
+    <div class="col s12 m3">
+        <h5 style="font-weight: bold">Local Stats</h5>
+        <ul class="collection">
+          <li class="collection-item"><i class="material-icons">file_upload</i> {{ user_upload|humanise_bits }}/s</li>
+          <li class="collection-item"><i class="material-icons">file_download</i> {{ user_download|humanise_bits }}/s</li>
+          <li class="collection-item">Ping {{ user_ping|floatformat:2 }}ms</li>
+        </ul>
+        <ul class="collection">
+            <li class="collection-item"><i class="material-icons">file_upload</i>
+                {% if user_upload|get_change:average_ul_speed > 0 %}
+                    {{ user_upload|get_change:average_ul_speed }}% faster
+                {% else %} {{ user_upload|get_change:average_ul_speed|to_pos }}% slower
+                {% endif %} than average for {{ area_code }}
+            </li>
+            <li class="collection-item"><i class="material-icons">file_download</i>
+                {% if user_download|get_change:average_dl_speed > 0 %}
+                    {{ user_download|get_change:average_dl_speed }}% faster
+                {% else %} {{ user_download|get_change:average_dl_speed|to_pos }}% slower
+                {% endif %} than average for {{ area_code }}
+            </li>
+        {% if loc %}
+            <li class="collection-item"><i class="material-icons">file_upload</i>
+                {% if user_upload|get_change:loc.average_ul_speed > 0 %}
+                    {{ user_upload|get_change:loc.average_ul_speed }}% faster
+                {% else %} {{ user_upload|get_change:loc.average_ul_speed|to_pos }}% slower
+                {% endif %} than average for {{ loc.post_code_structured }}
+            </li>
+            <li class="collection-item"><i class="material-icons">file_download</i>
+                {% if user_download|get_change:loc.average_dl_speed > 0 %}
+                    {{ user_download|get_change:loc.average_dl_speed }}% faster
+                {% else %} {{ user_download|get_change:loc.average_dl_speed|to_pos }}% slower
+                {% endif %} than average for {{ loc.post_code_structured }}
+            </li>
+        {% endif %}
+        </ul>
+
+    </div>
+    <div class="col s12 m9">
+        <canvas id="speed_chart"></canvas>
+    </div>
+</div>
+</div>
+<div class="row">
+    <div class="col s12 m10 l8 push-m1 push-l2">
+        <table class="responsive-table highlight">
+        <thead>
+            <tr>
+                <th colspan="4"></th>
+                <th colspan="4">% Premises not able to receive</th>
+            </tr>
+          <tr>
+              <th rowspan="2">Area</th>
+              <th rowspan="2">SFBB Availability</th>
+              <th rowspan="2">UFBB Availability</th>
+              <th rowspan="2">NGA Availability</th>
+              <th>2Mb/s</th>
+              <th>5Mb/s</th>
+              <th>10Mb/s</th>
+              <th>30Mb/s</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+              <td>{{ area_code }}</td>
+              <td>{{ SFBB_avail }}%</td>
+              <td>{{ UFBB_avail }}%</td>
+              <td>{{ NGA_avail }}%</td>
+              <td>{{ perc_prem_not_2Mb }}%</td>
+              <td>{{ perc_prem_not_5Mb }}%</td>
+              <td>{{ perc_prem_not_10Mb }}%</td>
+              <td>{{ perc_prem_not_30Mb }}%</td>
+          </tr>
+          {% if loc %}
+            <tr>
+              <td>{{ loc.post_code_structured }}</td>
+              <td>{{ loc.SFBB_avail|floatformat:2 }}%</td>
+              <td>{{ loc.UFBB_avail|floatformat:2 }}%</td>
+              <td>{{ loc.NGA_avail|floatformat:2 }}%</td>
+              <td>{{ loc.perc_prem_not_2Mb|floatformat:2 }}%</td>
+              <td>{{ loc.perc_prem_not_5Mb|floatformat:2 }}%</td>
+              <td>{{ loc.perc_prem_not_10Mb|floatformat:2 }}%</td>
+              <td>{{ loc.perc_prem_not_30Mb|floatformat:2 }}%</td>
+          </tr>
+        {% endif %}
+        </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    var ctx = document.getElementById("speed_chart");
+var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ["Min", "Median", "Mean", "Max"],
+        datasets: [{
+            label: '{{ area_code }} Download',
+            data: [{{ min_dl_speed }}, {{ median_dl_speed }},
+                {{ average_dl_speed }}, {{ max_dl_speed }}],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.9)',
+                'rgba(255, 99, 132, 0.9)',
+                'rgba(255, 99, 132, 0.9)',
+                'rgba(255, 99, 132, 0.9)'
+
+            ],
+            borderColor: [
+                'rgba(255,99,132,1)',
+                'rgba(255,99,132,1)',
+                'rgba(255,99,132,1)',
+                'rgba(255,99,132,1)'
+            ],
+            borderWidth: 1
+        },
+        {
+            label: '{{ area_code }} Upload',
+            data: [{{ min_ul_speed }}, {{ median_ul_speed }},
+                {{ average_ul_speed }}, {{ max_ul_speed }}],
+            backgroundColor: [
+                'rgba(54, 162, 235, 0.9)',
+                'rgba(54, 162, 235, 0.9)',
+                'rgba(54, 162, 235, 0.9)',
+                'rgba(54, 162, 235, 0.9)'
+            ],
+            borderColor: [
+
+                'rgba(54, 162, 235, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(54, 162, 235, 1)'
+            ],
+            borderWidth: 1
+        },
+            {% if loc %}
+            {
+            label: '{{ loc.post_code_structured }} Download',
+            data: [{{ loc.min_dl_speed }}, {{ loc.median_dl_speed }},
+                {{ loc.average_dl_speed }}, {{ loc.max_dl_speed }}],
+            backgroundColor: [
+                'rgba(123, 186, 133, 0.9)',
+                'rgba(123, 186, 133, 0.9)',
+                'rgba(123, 186, 133, 0.9)',
+                'rgba(123, 186, 133, 0.9)'
+
+            ],
+            borderColor: [
+                'rgba(123, 186, 133, 1)',
+                'rgba(123, 186, 133, 1)',
+                'rgba(123, 186, 133, 1)',
+                'rgba(123, 186, 133, 1)'
+            ],
+            borderWidth: 1
+        },
+        {
+            label: '{{ loc.post_code_structured }} Upload',
+            data: [{{ loc.min_ul_speed }}, {{ loc.median_ul_speed }},
+                {{ loc.average_ul_speed }}, {{ loc.max_ul_speed }}],
+            backgroundColor: [
+                'rgba(161, 44, 44, 0.9)',
+                'rgba(161, 44, 44, 0.9)',
+                'rgba(161, 44, 44, 0.9)',
+                'rgba(161, 44, 44, 0.9)'
+            ],
+            borderColor: [
+
+                'rgba(161, 44, 44, 1)',
+                'rgba(161, 44, 44, 1)',
+                'rgba(161, 44, 44, 1)',
+                'rgba(161, 44, 44, 1)'
+            ],
+            borderWidth: 1
+        },{% endif %}
+            {
+            label: 'Local Download',
+            data: [null, null, {{ user_download }}, null],
+            backgroundColor: [
+                'rgba(255, 206, 86, 0.9)',
+                'rgba(255, 206, 86, 0.9)',
+                'rgba(255, 206, 86, 0.9)',
+                'rgba(255, 206, 86, 0.9)'
+
+            ],
+            borderColor: [
+                'rgba(255, 206, 86, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(255, 206, 86, 1)'
+            ],
+            borderWidth: 1
+        },
+            {
+            label: 'Local Upload',
+            data: [null, null, {{ user_upload }}, null],
+            backgroundColor: [
+                'rgba(153, 102, 255, 0.9)',
+                'rgba(153, 102, 255, 0.9)',
+                'rgba(153, 102, 255, 0.9)',
+                'rgba(153, 102, 255, 0.9)'
+
+            ],
+            borderColor: [
+                'rgba(153, 102, 255, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(153, 102, 255, 1)'
+            ],
+            borderWidth: 1
+        }
+        ]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                },
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Mb/s'
+                  }
+            }]
+        }
+    }
+});
+</script>
