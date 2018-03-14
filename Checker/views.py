@@ -52,6 +52,8 @@ def start_view(request):
 
         # find area locations
         area_locs = Location.objects.filter(post_code_area__code=area).values()
+        if not area_locs:
+            return error_message('Could not find any Locations matching {}'.format(area_code))
         print('{} locations for area code "{}"'.format(len(area_locs), area_code))
 
         # aggregate
