@@ -32,7 +32,7 @@ The server will be running on http://127.0.0.1:8000/ by defult
 
 ### Updating the Dataset
 
-SpeedChecker comes with a script to write CSV files from Ofcom's [Connected Nations Report](https://www.ofcom.org.uk/research-and-data/multi-sector-research/infrastructure-research/connected-nations-2016/downloads) into the sqlite database. However it requires [pandas](https://pandas.pydata.org/) (v0.22) package for fast data processing.
+SpeedChecker comes with a script to write CSV files from Ofcom's [Connected Nations Report](https://www.ofcom.org.uk/research-and-data/multi-sector-research/infrastructure-research/connected-nations-2016/downloads) into the sqlite database.
 
 To add new data to the database:
 
